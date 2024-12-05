@@ -1,0 +1,107 @@
+Banco de dados projeto final
+
+DROP TABLE IF EXISTS ordem_servico CASCADE;
+DROP TABLE IF EXISTS servico CASCADE;
+DROP TABLE IF EXISTS veiculo CASCADE;
+DROP TABLE IF EXISTS cliente CASCADE;
+DROP TABLE IF EXISTS fornecedor CASCADE;
+
+
+CREATE TABLE cliente (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(15),
+    endereco VARCHAR(255),
+    email VARCHAR(100)
+);
+
+
+CREATE TABLE veiculo (
+    id SERIAL PRIMARY KEY,
+    placa VARCHAR(10) NOT NULL UNIQUE,
+    modelo VARCHAR(50),
+    ano INT,
+    tipo VARCHAR(20),
+    id_cliente INT REFERENCES cliente(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE servico (
+    id SERIAL PRIMARY KEY,
+    descricao TEXT NOT NULL,
+    valor NUMERIC(6, 2) NOT NULL,
+    duracao_estimada INT NOT NULL 
+);
+
+
+CREATE TABLE ordem_servico (
+    id SERIAL PRIMARY KEY,
+    data_abertura DATE NOT NULL,
+    status VARCHAR(20) CHECK (status IN ('em andamento', 'concluído', 'cancelado')) NOT NULL,
+    id_veiculo INT REFERENCES veiculo(id) ON DELETE CASCADE,
+    id_servico INT REFERENCES servico(id) ON DELETE CASCADE,
+    valor_total NUMERIC(6, 2) NOT NULL
+);
+
+
+CREATE TABLE fornecedor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(15),
+    endereco VARCHAR(255),
+    email VARCHAR(100)
+);
+
+
+INSERT INTO cliente (nome, telefone, endereco, email)
+VALUES
+('Luis Felipe', '(83) 98765-4321', 'Rua da Paz, 45', 'joao@gmail.com'),
+('Maria ', '(83) 99654-1234', 'Avenida Central, 101', 'maria@hotmail.com');
+
+
+INSERT INTO veiculo (placa, modelo, ano, tipo, id_cliente)
+VALUES
+('ABC1234', 'Fusca', 1985, 'carro', 1),
+('XYZ5678', 'Honda CG', 2010, 'moto', 2);
+
+
+INSERT INTO servico (descricao, valor, duracao_estimada)
+VALUES
+('Troca de óleo', 150.00, 30),
+('Alinhamento de direção', 80.00, 60);
+
+
+INSERT INTO ordem_servico (data_abertura, status, id_veiculo, id_servico, valor_total)
+VALUES
+('2024-11-01', 'em andamento', 1, 1, 150.00),
+('2024-11-05', 'concluído', 2, 2, 80.00);
+
+
+INSERT INTO fornecedor (nome, telefone, endereco, email)
+VALUES
+('Auto Peças ABC', '(11) 34567-8901', 'Rua das Indústrias, 200', 'autopecas@gmail.com'),
+('Peças e Acessórios XYZ', '(21) 23456-7890', 'Avenida das Flores, 300', 'pecas@gmail.com');
+
+
+SELECT 
+    c.nome AS cliente_nome, 
+    c.telefone AS cliente_telefone, 
+    c.endereco AS cliente_endereco, 
+    c.email AS cliente_email, 
+    v.placa AS veiculo_placa, 
+    v.modelo AS veiculo_modelo, 
+    v.ano AS veiculo_ano, 
+    v.tipo AS veiculo_tipo, 
+    o.data_abertura AS ordem_data_abertura, 
+    o.status AS ordem_status, 
+    s.descricao AS servico_descricao, 
+    s.valor AS servico_valor, 
+    o.valor_total AS ordem_valor_total
+FROM 
+    cliente c
+LEFT JOIN 
+    veiculo v ON c.id = v.id_cliente
+LEFT JOIN 
+    ordem_servico o ON v.id = o.id_veiculo
+LEFT JOIN 
+    servico s ON o.id_servico = s.id;
